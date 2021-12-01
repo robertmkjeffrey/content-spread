@@ -60,7 +60,10 @@ new_post['title'] = input("Title: ")
 print("Great! Which subreddit(s) should I designate it for?")
 new_post['subreddit'] = None
 printed_one = False
+
 try:
+    if config['saved_subreddits'] is None:
+        config['saved_subreddits'] = []
     choices = {0: None}
     for i, subreddit in enumerate(config['saved_subreddits']):
         printed_one = True
