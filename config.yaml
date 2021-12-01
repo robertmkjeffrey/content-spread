@@ -1,2 +1,10 @@
+imgur:
+  client_id: ~
+  client_secret: ~
+reddit:
+  client_id: ~
+  client_secret: ~
+  password: ~
+  username: ~
+library_directory: post_library
 saved_subreddits: ~
-
