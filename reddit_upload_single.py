@@ -42,15 +42,17 @@ print(url)
 
 ## Upload to reddit
 reddit_client = utils.create_reddit_client(config)
-reddit_post = utils.upload_to_reddit(url, post_data, reddit_client)
-utils.post_sources(reddit_post, post_data)
+for subreddit in post_data["subreddits"]:
+    reddit_post = utils.upload_to_reddit(url, subreddit, post_data, reddit_client)
+    utils.post_sources(reddit_post, post_data)
+    print(reddit_post.shortlink)
+
 
 # Move files to archive
 print("Archiving...")
 os.rename(os.path.join(LIBRARY_DIRECTORY, post), os.path.join(ARCHIVE_DIRECTORY, post))
 
-print("Complete! Here's the link:")
-print(reddit_post.shortlink)
+print("Complete!")
 
 
 

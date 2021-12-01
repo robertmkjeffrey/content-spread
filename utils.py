@@ -59,8 +59,8 @@ def create_reddit_client(config):
     client.validate_on_submit=True
     return client
 
-def upload_to_reddit(url, metadata, client):
-    submission = client.subreddit(metadata["subreddit"]).submit(
+def upload_to_reddit(url, subreddit, metadata, client):
+    submission = client.subreddit(subreddit).submit(
         title=format_title_with_source(metadata),
         url = url,
         resubmit = False,

@@ -59,35 +59,52 @@ print()
 print("Give a title for the post. I'll add the attribution for you.")
 new_post['title'] = input("Title: ")
 
+#%% Get subreddit(s)
 print("Great! Which subreddit(s) should I designate it for?")
-new_post['subreddit'] = None
+print("Enter a blank line to finish.")
+new_post['subreddits'] = []
 printed_one = False
 
+# If saved_subreddits is none or non-existant, create it.
 try:
     if config['saved_subreddits'] is None:
-        config['saved_subreddits'] = []
-    choices = {0: None}
-    for i, subreddit in enumerate(config['saved_subreddits']):
-        printed_one = True
-        choices[i+1] = subreddit
-        print(f"{i+1}: /r/{subreddit.lower()}")
+            config['saved_subreddits'] = []
 except KeyError:
     config["saved_subreddits"] = []
 
-if printed_one:
-    print("For a different subreddit, enter 0.")
-    choice = int(input())
-    new_post['subreddit'] = choices[choice]
 
-# TODO: Multiple subreddits
-if new_post['subreddit'] is None:
+while True:
+    if len(config['saved_subreddits']) > 0:
+        choices = {0: None}
+        for i, subreddit in enumerate(config['saved_subreddits']):
+            printed_one = True
+            choices[i+1] = subreddit
+            print(f"{i+1}: /r/{subreddit.lower()}")
+        
+        print("For a different subreddit, enter 0.")
+
+
+        choice = input()
+        if len(choice) == 0:
+            break
+        elif int(choice) == 0:
+            # If they entered zero, continue to get explicit text input.
+            pass
+        else:
+            # Otherwise, take the input and start again.
+            new_post['subreddits'].append(choices[int(choice)])
+            print()
+            continue
+
+    # If we didn't select a saved subreddit, get it as text.
     print("Enter the subreddit I should post it in. Don't include the \"r/\"!")
-    new_post['subreddit'] = input("Subreddit: ").lower()
+    new_post['subreddits'].append(input("Subreddit: ").lower())
     print("Should I save that?")
     if input("Save? ").lower() in ["y", "yes", "good drone"]:
         config['saved_subreddits'].append(new_post['subreddit'])
         update_config = True
 
+#%%
 print()
 print("Finally, is the post NSFW? (y/n)")
 while True:
@@ -106,8 +123,9 @@ pprint(new_post)
 
 import random
 import string
-post_directory = os.path.join(LIBRARY_DIRECTORY, "post_"+''.join(random.choices(string.ascii_lowercase + string.digits, k=POST_NAME_LENGTH)))
-print(f"Directory name: {post_directory}")
+post_name = "post_"+''.join(random.choices(string.ascii_lowercase + string.digits, k=POST_NAME_LENGTH))
+post_directory = os.path.join(LIBRARY_DIRECTORY, post_name)
+print(f"Directory name: {post_name}")
 os.mkdir(post_directory)
 
 
