@@ -6,5 +6,6 @@ reddit:
   client_secret: ~
   password: ~
   username: ~
+  agent_name: ~
 library_directory: post_library
 saved_subreddits: ~
