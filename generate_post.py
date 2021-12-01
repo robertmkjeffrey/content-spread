@@ -22,19 +22,8 @@ print("Welcome to the post generator! I am 9653-cs, at your service.")
 
 new_post = {}
 
-print("First, enter links to the images you'd like to save. Enter a blank line to finish.")
-new_post["image_links"] = []
-while True:
-    link = input(f"Image #{len(new_post['image_links']) + 1}: ")
-    if len(link) > 0:
-        new_post["image_links"].append(link)
-    elif not new_post["image_links"]:
-        print("Error: must provide at least one link. Try again.")
-    else:
-        break
-
 print()
-print("Great! What's main source for that? Again, blank line to finish.")
+print("First, provide the source links. Enter a blank line to finish.")
 new_post['source_links']= []
 while True:
     source = input(f"Source #{len(new_post['source_links'])+1}: ")
@@ -45,7 +34,20 @@ while True:
     else:
         break
 
-# TAutomatically get this from the source if possible
+
+print("Great! Now enter links to the images you'd like to save. Again, blank line to finish.")
+print("Note: I'm currently unable to create albums on imgur. Just use one source for now!")
+new_post["image_links"] = []
+while True:
+    link = input(f"Image #{len(new_post['image_links']) + 1}: ")
+    if len(link) > 0:
+        new_post["image_links"].append(link)
+    elif not new_post["image_links"]:
+        print("Error: must provide at least one link. Try again.")
+    else:
+        break
+
+# Automatically get this from the source if possible
 new_post['short_source'] = get_short_source(new_post['source_links'][0])
 if new_post['short_source'] is None:
     print("Next, give a short name for the attribution.")
@@ -77,6 +79,7 @@ if printed_one:
     choice = int(input())
     new_post['subreddit'] = choices[choice]
 
+# TODO: Multiple subreddits
 if new_post['subreddit'] is None:
     print("Enter the subreddit I should post it in. Don't include the \"r/\"!")
     new_post['subreddit'] = input("Subreddit: ").lower()
