@@ -15,7 +15,7 @@ if config is None:
     config = {}
 
 from utils import get_short_source
-LIBRARY_DIRECTORY = "post_library"
+LIBRARY_DIRECTORY = config["library_directory"]
 ARCHIVE_DIRECTORY = os.path.join(LIBRARY_DIRECTORY, "archive")
 
 print("Welcome to the post generator! I am 9653-cs, at your service.")
@@ -81,7 +81,7 @@ if new_post['subreddit'] is None:
     print("Enter the subreddit I should post it in. Don't include the \"r/\"!")
     new_post['subreddit'] = input("Subreddit: ").lower()
     print("Should I save that?")
-    if input().lower() in ["y", "yes", "good drone"]:
+    if input("Save? ").lower() in ["y", "yes", "good drone"]:
         config['saved_subreddits'].append(new_post['subreddit'])
         update_config = True
 
@@ -110,9 +110,10 @@ os.mkdir(post_directory)
 
 import urllib.request
 
+os.mkdir(os.path.join(post_directory, "media"))
 for i, link in enumerate(new_post["image_links"]):
     r = urllib.request.urlopen(link)
-    with open(os.path.join(post_directory, "image"+str(i)+".jpg"), 'wb') as f:
+    with open(os.path.join(post_directory,"media","image"+str(i)+".jpg"), 'wb') as f:
         f.write(r.read())
 
 with open(os.path.join(post_directory, "data.yaml"), 'w') as f:
