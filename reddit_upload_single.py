@@ -4,6 +4,7 @@ from yaml.dumper import SafeDumper
 from yaml.loader import SafeLoader
 import os
 
+SUBREDDIT_INDEX_FILE_NAME = "subreddit_index"
 
 CONFIG_FILE = "config.yaml"
 with open(CONFIG_FILE, 'r') as f:
@@ -12,14 +13,14 @@ LIBRARY_DIRECTORY = config["library_directory"]
 ARCHIVE_DIRECTORY = os.path.join(LIBRARY_DIRECTORY, "archive")
 # Records if the config has been update to check if we should write it back.
 
-def reddit_upload_single_post(post, archive, verbose=False):
+def reddit_upload_single_post(post_id, archive=True, verbose=False):
     # Get post metadata 
-    with open(os.path.join(LIBRARY_DIRECTORY, post, "data.yaml"), 'r') as f:
+    with open(os.path.join(LIBRARY_DIRECTORY, post_id, "data.yaml"), 'r') as f:
         post_data = yaml.load(f, SafeLoader)
 
     # Upload all images in the media folder.
     # Filepaths of images
-    images = [os.path.join(LIBRARY_DIRECTORY, post, "media", x) for x in os.listdir(os.path.join(LIBRARY_DIRECTORY, post, "media"))]
+    images = [os.path.join(LIBRARY_DIRECTORY, post_id, "media", x) for x in os.listdir(os.path.join(LIBRARY_DIRECTORY, post_id, "media"))]
 
     imgur_client = utils.create_imgur_client(config)
     if verbose:
@@ -45,7 +46,18 @@ def reddit_upload_single_post(post, archive, verbose=False):
     if archive:
         if verbose:
             print("Archiving...")
-        os.rename(os.path.join(LIBRARY_DIRECTORY, post), os.path.join(ARCHIVE_DIRECTORY, post))
+        os.rename(os.path.join(LIBRARY_DIRECTORY, post_id), os.path.join(ARCHIVE_DIRECTORY, post_id))
+
+        index_file = os.path.join(LIBRARY_DIRECTORY, SUBREDDIT_INDEX_FILE_NAME)
+        if os.path.exists(index_file):
+            with open(index_file, "r") as f:
+                subreddit_index = yaml.load(f, SafeLoader)
+
+            for subreddit in post_data["subreddits"]:
+                subreddit_index[subreddit].pop(post_id)
+
+            with open(index_file, "w") as f:
+                yaml.dump(subreddit_index, f, SafeDumper)
 
     if verbose:
         print("Complete!")
