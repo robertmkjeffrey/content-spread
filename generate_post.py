@@ -5,6 +5,7 @@ from yaml.loader import SafeLoader
 from pprint import pprint
 
 POST_NAME_LENGTH = 10
+SUBREDDIT_INDEX_FILE_NAME = "subreddit_index"
 
 CONFIG_FILE = "config.yaml"
 with open(CONFIG_FILE, 'r') as f:
@@ -98,10 +99,11 @@ while True:
 
     # If we didn't select a saved subreddit, get it as text.
     print("Enter the subreddit I should post it in. Don't include the \"r/\"!")
-    new_post['subreddits'].append(input("Subreddit: ").lower())
+    new_subreddit = input("Subreddit: ").lower()
+    new_post['subreddits'].append(new_subreddit)
     print("Should I save that?")
     if input("Save? ").lower() in ["y", "yes", "good drone"]:
-        config['saved_subreddits'].append(new_post['subreddit'])
+        config['saved_subreddits'].append(new_subreddit)
         update_config = True
 
 #%%
@@ -123,10 +125,12 @@ pprint(new_post)
 
 import random
 import string
-post_name = "post_"+''.join(random.choices(string.ascii_lowercase + string.digits, k=POST_NAME_LENGTH))
-post_directory = os.path.join(LIBRARY_DIRECTORY, post_name)
-print(f"Directory name: {post_name}")
+post_id = "post_"+''.join(random.choices(string.ascii_lowercase + string.digits, k=POST_NAME_LENGTH))
+post_directory = os.path.join(LIBRARY_DIRECTORY, post_id)
+print(f"Directory name: {post_id}")
 os.mkdir(post_directory)
+
+new_post["post_id"] = post_id
 
 
 import urllib.request
@@ -140,6 +144,23 @@ for i, link in enumerate(new_post["image_links"]):
 with open(os.path.join(post_directory, "data.yaml"), 'w') as f:
     yaml.dump(new_post, f, SafeDumper)
 
+# Save the subreddit index
+index_file = os.path.join(LIBRARY_DIRECTORY, SUBREDDIT_INDEX_FILE_NAME)
+if os.path.exists(index_file):
+    with open(index_file, "r") as f:
+        subreddit_index = yaml.load(f, SafeLoader)
+else:
+    subreddit_index = {}
+
+for subreddit in new_post["subreddits"]:
+    if subreddit not in subreddit_index:
+        subreddit_index[subreddit] = []
+    subreddit_index[subreddit].append(post_id)
+
+with open(index_file, "w") as f:
+    yaml.dump(subreddit_index, f, SafeDumper)
+
+# If the config was updated, save it
 if update_config:
     with open(CONFIG_FILE, 'w') as f:
         yaml.dump(config, f, SafeDumper)
