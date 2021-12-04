@@ -4,6 +4,8 @@ from yaml.dumper import SafeDumper
 from yaml.loader import SafeLoader
 import os
 
+from pprint import pprint
+
 SUBREDDIT_INDEX_FILE_NAME = "subreddit_index"
 
 CONFIG_FILE = "config.yaml"
@@ -54,7 +56,7 @@ def reddit_upload_single_post(post_id, archive=True, verbose=False):
                 subreddit_index = yaml.load(f, SafeLoader)
 
             for subreddit in post_data["subreddits"]:
-                subreddit_index[subreddit].pop(post_id)
+                subreddit_index[subreddit].remove(post_id)
 
             with open(index_file, "w") as f:
                 yaml.dump(subreddit_index, f, SafeDumper)
@@ -64,16 +66,26 @@ def reddit_upload_single_post(post_id, archive=True, verbose=False):
 
 if __name__ == "__main__":
     print("Welcome to the reddit uploader!")
-    print("Which post would you like to upload? Give the folder name or type \"random\".")
+    print("Which post would you like to upload? Give the folder name, type \"list\" or type \"random\".")
 
-    post = input("Post: ")
-    if post.lower() == "random":
-        # TODO: select a random post by 
-        raise NotImplementedError()
-    elif post[0:5] != "post_":
-        print("Error: unrecognised post format. It should start with post_")
-        exit()
-
-    reddit_upload_single_post(post, archive=True, verbose=True)
+    while True:
+        post = input("Post: ")
+        if post.lower() == "list":
+            index_file = os.path.join(LIBRARY_DIRECTORY, SUBREDDIT_INDEX_FILE_NAME)
+            if os.path.exists(index_file):
+                with open(index_file, "r") as f:
+                    subreddit_index = yaml.load(f, SafeLoader)
+                pprint(subreddit_index)
+            else:
+                print("No subreddit index found.")
+        elif post.lower() == "random":
+            # TODO: select a random post by 
+            raise NotImplementedError()
+        elif post[0:5] != "post_":
+            print("Error: unrecognised post format. It should start with post_")
+            exit()
+        else:
+            reddit_upload_single_post(post, archive=True, verbose=True)
+            break
 
 
