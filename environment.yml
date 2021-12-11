@@ -1,0 +1,12 @@
+name: content-spread
+channels:
+  - defaults
+  - conda-forge
+dependencies:
+  - numpy
+  - matplotlib
+  - tqdm
+  - jupyter
+  - pandas
+  - imgurpython
+  - praw
