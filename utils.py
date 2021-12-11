@@ -1,4 +1,4 @@
-import regex as re
+import re
 
 def get_short_source(source):
     """Extract a shortname from a source. """
