@@ -9,8 +9,7 @@ from pprint import pprint
 SUBREDDIT_INDEX_FILE_NAME = "subreddit_index"
 
 CONFIG_FILE = "config.yaml"
-with open(CONFIG_FILE, 'r') as f:
-    config = yaml.load(f, SafeLoader)
+config = utils.load_config(CONFIG_FILE)
 LIBRARY_DIRECTORY = config["library_directory"]
 ARCHIVE_DIRECTORY = os.path.join(LIBRARY_DIRECTORY, "archive")
 # Records if the config has been update to check if we should write it back.

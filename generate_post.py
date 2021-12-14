@@ -4,6 +4,8 @@ from yaml.dumper import SafeDumper
 from yaml.loader import SafeLoader
 from pprint import pprint
 
+from utils import create_twitter_client, get_short_source, get_image_links
+
 POST_NAME_LENGTH = 10
 SUBREDDIT_INDEX_FILE_NAME = "subreddit_index"
 
@@ -15,7 +17,6 @@ update_config = False
 if config is None:
     config = {}
 
-from utils import get_short_source
 LIBRARY_DIRECTORY = config["library_directory"]
 ARCHIVE_DIRECTORY = os.path.join(LIBRARY_DIRECTORY, "archive")
 
@@ -35,18 +36,22 @@ while True:
     else:
         break
 
+twitter_client = create_twitter_client(config)
 
-print("Great! Now enter links to the images you'd like to save. Again, blank line to finish.")
-print("Note: I'm currently unable to create albums on imgur. Just use one source for now!")
-new_post["image_links"] = []
-while True:
-    link = input(f"Image #{len(new_post['image_links']) + 1}: ")
-    if len(link) > 0:
-        new_post["image_links"].append(link)
-    elif not new_post["image_links"]:
-        print("Error: must provide at least one link. Try again.")
-    else:
-        break
+# Try to get the images from the source links.
+new_post["image_links"] = get_image_links(new_post["source_links"], twitter_client=twitter_client)
+if not new_post["image_links"]:
+    print("Great! Now enter links to the images you'd like to save. Again, blank line to finish.")
+    print("Note: I'm currently unable to create albums on imgur. Just use one source for now!")
+    new_post["image_links"] = []
+    while True:
+        link = input(f"Image #{len(new_post['image_links']) + 1}: ")
+        if len(link) > 0:
+            new_post["image_links"].append(link)
+        elif not new_post["image_links"]:
+            print("Error: must provide at least one link. Try again.")
+        else:
+            break
 
 # Automatically get this from the source if possible
 new_post['short_source'] = get_short_source(new_post['source_links'][0])
