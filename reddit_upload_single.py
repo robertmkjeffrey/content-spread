@@ -21,7 +21,7 @@ def reddit_upload_single_post(post_id, archive=True, verbose=False):
 
     # Upload all images in the media folder.
     # Filepaths of images
-    images = [os.path.join(LIBRARY_DIRECTORY, post_id, "media", x) for x in os.listdir(os.path.join(LIBRARY_DIRECTORY, post_id, "media"))]
+    images = [os.path.join(LIBRARY_DIRECTORY, post_id, "media", x) for x in sorted(os.listdir(os.path.join(LIBRARY_DIRECTORY, post_id, "media")))]
 
     imgur_client = utils.create_imgur_client(config)
     if verbose:
