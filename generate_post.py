@@ -90,7 +90,7 @@ while True:
         print("For a different subreddit, enter 0.")
 
 
-        choice = input()
+        choice = input("Subreddit: ")
         if len(choice) == 0:
             break
         elif int(choice) == 0:

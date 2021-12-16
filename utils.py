@@ -22,8 +22,17 @@ def get_image_links(sources, twitter_client=None):
             # Twitter links
             idm = re.match(".*twitter.com\/.*\/status\/(\d*)", source)
             if idm:
+                print(f"Found a twitter link ({source}).")
                 id = idm.group(1)
-                links += get_tweet_media_urls(id, twitter_client)
+                source_links = get_tweet_media_urls(id, twitter_client)
+                if len(source_links) > 1:
+                    print("Which images should I use? Give a comma separated list (0 being the first), or an empty link for all.")
+                    indexes = [int(i) for i in input("Images: ").split(",")]
+                    for index in indexes:
+                        links.append(source_links[index])
+                else:
+                    links += source_links
+                
     
     return links
 
