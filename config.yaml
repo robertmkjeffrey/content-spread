@@ -1,3 +1,9 @@
+twitter:
+  access_token: ~
+  access_token_secret: ~
+  api_key: ~
+  api_secret: ~
+  bearer_token: ~
 imgur:
   client_id: ~
   client_secret: ~
