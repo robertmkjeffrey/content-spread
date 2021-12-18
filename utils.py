@@ -27,9 +27,13 @@ def get_image_links(sources, twitter_client=None):
                 source_links = get_tweet_media_urls(id, twitter_client)
                 if len(source_links) > 1:
                     print("Which images should I use? Give a comma separated list (0 being the first), or an empty link for all.")
-                    indexes = [int(i) for i in input("Images: ").split(",")]
-                    for index in indexes:
-                        links.append(source_links[index])
+                    indexes_input = input("Images: ")
+                    if not indexes_input:
+                        links += source_links
+                    else:
+                        indexes = [int(i) for i in indexes_input.split(",")]
+                        for index in indexes:
+                            links.append(source_links[index])
                 else:
                     links += source_links
                 
