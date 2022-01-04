@@ -10,3 +10,5 @@ dependencies:
   - pandas
   - imgurpython
   - praw
+  - tweepy
+  
