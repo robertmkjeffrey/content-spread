@@ -3,15 +3,18 @@ import yaml
 from yaml.dumper import SafeDumper
 from yaml.loader import SafeLoader
 from pprint import pprint
+import random
+import string
+import urllib.request
 
-from utils import create_twitter_client, get_short_source, get_image_links
+from utils import create_twitter_client, get_short_source, get_image_links, load_config
 
 POST_NAME_LENGTH = 10
 SUBREDDIT_INDEX_FILE_NAME = "subreddit_index"
 
-CONFIG_FILE = "config.yaml"
-with open(CONFIG_FILE, 'r') as f:
-    config = yaml.load(f, SafeLoader)
+CONFIG_PATH = "config.yaml"
+config = load_config(CONFIG_PATH)
+    
 # Records if the config has been update to check if we should write it back.
 update_config = False
 if config is None:
@@ -20,10 +23,14 @@ if config is None:
 LIBRARY_DIRECTORY = config["library_directory"]
 ARCHIVE_DIRECTORY = os.path.join(LIBRARY_DIRECTORY, "archive")
 
+# Try to create a twitter client.
+twitter_client = create_twitter_client(config)
+
 print("Welcome to the post generator! I am 9653-cs, at your service.")
 
 new_post = {}
 
+# Get a list of source links.
 print()
 print("First, provide the source links. Enter a blank line to finish.")
 new_post['source_links']= []
@@ -35,8 +42,6 @@ while True:
         print("Error: must provide at least one source. Try again.")
     else:
         break
-
-twitter_client = create_twitter_client(config)
 
 # Try to get the images from the source links.
 new_post["image_links"] = get_image_links(new_post["source_links"], twitter_client=twitter_client)
@@ -78,8 +83,9 @@ try:
 except KeyError:
     config["saved_subreddits"] = []
 
-
+# Get the subreddits the post is designated for.
 while True:
+    # Print the saved subreddits.
     if len(config['saved_subreddits']) > 0:
         choices = {0: None}
         for i, subreddit in enumerate(config['saved_subreddits']):
@@ -107,7 +113,7 @@ while True:
     new_subreddit = input("Subreddit: ").lower()
     new_post['subreddits'].append(new_subreddit)
     print("Should I save that?")
-    if input("Save? ").lower() in ["y", "yes", "good drone"]:
+    if input("Save? ").lower() in ["y", "yes"]:
         config['saved_subreddits'].append(new_subreddit)
         update_config = True
 
@@ -128,8 +134,7 @@ while True:
 print("Okay, we're done! Saving this post:")
 pprint(new_post)
 
-import random
-import string
+# Generate a random post title of letters and digits.
 post_id = "post_"+''.join(random.choices(string.ascii_lowercase + string.digits, k=POST_NAME_LENGTH))
 post_directory = os.path.join(LIBRARY_DIRECTORY, post_id)
 print(f"Directory name: {post_id}")
@@ -137,19 +142,18 @@ os.mkdir(post_directory)
 
 new_post["post_id"] = post_id
 
-
-import urllib.request
-
+# Make a media directory in the post file and save all linked images to that folder.
 os.mkdir(os.path.join(post_directory, "media"))
 for i, link in enumerate(new_post["image_links"]):
     r = urllib.request.urlopen(link)
     with open(os.path.join(post_directory,"media","image"+str(i)+".jpg"), 'wb') as f:
         f.write(r.read())
 
+# Dump the data into a yaml file.
 with open(os.path.join(post_directory, "data.yaml"), 'w') as f:
     yaml.dump(new_post, f, SafeDumper)
 
-# Save the subreddit index
+# Open the existing subreddit index
 index_file = os.path.join(LIBRARY_DIRECTORY, SUBREDDIT_INDEX_FILE_NAME)
 if os.path.exists(index_file):
     with open(index_file, "r") as f:
@@ -157,15 +161,17 @@ if os.path.exists(index_file):
 else:
     subreddit_index = {}
 
+# Update the subreddit index.
 for subreddit in new_post["subreddits"]:
     if subreddit not in subreddit_index:
         subreddit_index[subreddit] = []
     subreddit_index[subreddit].append(post_id)
 
+# Write the subreddit index.
 with open(index_file, "w") as f:
     yaml.dump(subreddit_index, f, SafeDumper)
 
 # If the config was updated, save it
 if update_config:
-    with open(CONFIG_FILE, 'w') as f:
+    with open(CONFIG_PATH, 'w') as f:
         yaml.dump(config, f, SafeDumper)
