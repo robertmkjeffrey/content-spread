@@ -1,32 +1,45 @@
 import re
+from typing import Optional, List, Union
 
-def load_config(CONFIG_FILE = "config.yaml"):
+def load_config(CONFIG_PATH: str = "config.yaml") -> dict:
+    "Load a config file."
     import yaml
-    with open(CONFIG_FILE, 'r') as f:
+    with open(CONFIG_PATH, 'r') as f:
         config = yaml.load(f, yaml.SafeLoader)
     return config
 
-def get_short_source(source):
-    """Extract a shortname from a source. """
-    # Twitter username
-    tm = re.match(".*twitter.com\/(.*)\/status*.", source)
+def get_short_source(source: str) -> Optional[str]:
+    """Extract a shortname from a source. 
+    
+    Returns:
+        shortname: Optional[str]
+            A string that represents the original owner of the content. For example, a twitter username including the @.
+    """
+
+    # Extract Twitter username from tweet url.
+    tm = re.match(".*twitter.com\\/(.*)\\/status*.", source)
     if tm:
         return "@"+tm.group(1)
 
+    # If no pattern matches, return None.
     return None
     
-def get_image_links(sources, twitter_client=None):
-    links = []
+def get_image_links(sources: List[str], twitter_client = None) -> List[str]:
+    """
+    Given a list of content sources, try to extract the image URLs."""
+    links: List[str] = []
     for source in sources:
         if twitter_client is not None:
-            # Twitter links
-            idm = re.match(".*twitter.com\/.*\/status\/(\d*)", source)
-            if idm:
+            # Extract  media links from tweet.
+            r = re.match(".*twitter.com\\/.*\\/status\\/(\\d*)", source)
+            if r:
                 print(f"Found a twitter link ({source}).")
-                id = idm.group(1)
+                id = r.group(1)
+                # Get all media urls from the tweet.
                 source_links = get_tweet_media_urls(id, twitter_client)
+                # Select the desired subset.
                 if len(source_links) > 1:
-                    print("Which images should I use? Give a comma separated list (0 being the first), or an empty link for all.")
+                    print("Which images should I use? Give a comma separated list (0 being the first), or an empty line for all.")
                     indexes_input = input("Images: ")
                     if not indexes_input:
                         links += source_links
@@ -115,7 +128,8 @@ def post_sources(reddit_post, metadata):
 
 # Twitter
 
-def create_twitter_client(config):
+def create_twitter_client(config: dict):
+    """Create a twitter client based on data stored in the config."""
     import tweepy
     return tweepy.Client(
         bearer_token=config["twitter"]["bearer_token"], 
@@ -125,7 +139,7 @@ def create_twitter_client(config):
         access_token_secret=config["twitter"]["access_token_secret"]
     )
 
-def get_tweet_media_urls(id, client):
+def get_tweet_media_urls(id: Union[int, str], client):
     links = []
     tweet = client.get_tweet(id=id, expansions="attachments.media_keys", media_fields="url")
     for i, image in enumerate(tweet.includes["media"]):
