@@ -25,6 +25,8 @@ if username[0] == "@":
     # drop "@"
     username = username[1:]
 
+include_retweets = input("Include retweets? (y/n): ").lower() in ["y", "yes"]
+
 # %%
 user = twitter_client.get_user(username=username)
 
@@ -34,7 +36,7 @@ while True:
     # Todo: keep track of post times to do later analysis.
     tweet_page = twitter_client.get_users_tweets(
         user.data.id, 
-        exclude="retweets,replies",
+        exclude="replies" + (",retweets" if not include_retweets else ""),
         expansions="attachments.media_keys",
         pagination_token=pagination_token
     )
@@ -55,21 +57,35 @@ while True:
         # We now have a tweet with an image.
 
         tweet_id = tweet.id
-        image_urls = get_tweet_media_urls(tweet_id, twitter_client)
-        if type(image_urls) == str:
-            image_urls = [image_urls]
+
+        tweet = twitter_client.get_tweet(id=tweet_id, expansions=["attachments.media_keys", "author_id", "referenced_tweets.id"], media_fields="url")
+
+        # If there's a source tweet, this is a retweet. 
+        # Get the original tweet instead.
+        if "tweets" in tweet.includes:
+            included_tweets = tweet.includes["tweets"]
+            assert len(included_tweets) == 1
+            included_tweets[0]
+
+            tweet_id = included_tweets[0].id
+            tweet = twitter_client.get_tweet(id=tweet_id, expansions=["attachments.media_keys", "author_id", "referenced_tweets.id"], media_fields="url")
+
+
+        tweet_author = tweet.includes["users"][0].username
+        image_urls = [x.url for x in tweet.includes["media"]]
 
         print(tweet_id)
-        print(tweet.text)
+        print("@" + tweet_author)
+        print(tweet.data.text)
         for url in image_urls:
             print(url)
         print()
 
         if input("Download? ").lower() in ["y", "yes"]:
             new_post = {
-                    "source_links" : [f"https://twitter.com/{username}/{tweet_id}"], 
+                    "source_links" : [f"https://twitter.com/{tweet_author}/status/{tweet_id}"], 
                     "image_links" : image_urls, 
-                    "short_source" : f"@{username}", 
+                    "short_source" : f"@{tweet_author}", 
                     "title" : input("Title: "), 
                     "subreddits" : input_desired_subreddits(), 
                 }
