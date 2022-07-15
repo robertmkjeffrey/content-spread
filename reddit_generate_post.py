@@ -23,6 +23,61 @@ if config is None:
 LIBRARY_DIRECTORY = config["library_directory"]
 ARCHIVE_DIRECTORY = os.path.join(LIBRARY_DIRECTORY, "archive")
 
+def input_desired_subreddits():
+    subreddits = []
+    printed_one = False
+
+    # If saved_subreddits is none or non-existant, create it.
+    try:
+        if config['saved_subreddits'] is None:
+                config['saved_subreddits'] = []
+    except KeyError:
+        config["saved_subreddits"] = []
+
+    # Get the subreddits the post is designated for.
+    while True:
+        # Print the saved subreddits.
+        if len(config['saved_subreddits']) > 0:
+            choices = {0: None}
+            for i, subreddit in enumerate(config['saved_subreddits']):
+                printed_one = True
+                choices[i+1] = subreddit
+                print(f"{i+1}: /r/{subreddit.lower()}")
+            
+            print("For a different subreddit, enter 0.")
+
+
+            choice = input("Subreddit: ")
+            if len(choice) == 0:
+                break
+
+            try:
+                choice = int(choice)
+            except ValueError:
+                print(f"Invalid choice {choice}. Input must be an integer.")
+                print()
+                continue
+
+            if int(choice) == 0:
+                # If they entered zero, continue to get explicit text input.
+                pass
+            else:
+                # Otherwise, take the input and start again.
+                subreddits.append(choices[int(choice)])
+                print()
+                continue
+
+        # If we didn't select a saved subreddit, get it as text.
+        print("Enter the subreddit I should post it in. Don't include the \"r/\"!")
+        new_subreddit = input("Subreddit: ").lower()
+        subreddits.append(new_subreddit)
+        print("Should I save that?")
+        if input("Save? ").lower() in ["y", "yes"]:
+            config['saved_subreddits'].append(new_subreddit)
+            update_config = True
+
+    return subreddits
+
 def create_reddit_post_record(new_post : dict):
 
     assert set(new_post.keys()) == {
@@ -124,57 +179,8 @@ if __name__ == "__main__":
     #%% Get subreddit(s)
     print("Great! Which subreddit(s) should I designate it for?")
     print("Enter a blank line to finish.")
-    post_data['subreddits'] = []
-    printed_one = False
-
-    # If saved_subreddits is none or non-existant, create it.
-    try:
-        if config['saved_subreddits'] is None:
-                config['saved_subreddits'] = []
-    except KeyError:
-        config["saved_subreddits"] = []
-
-    # Get the subreddits the post is designated for.
-    while True:
-        # Print the saved subreddits.
-        if len(config['saved_subreddits']) > 0:
-            choices = {0: None}
-            for i, subreddit in enumerate(config['saved_subreddits']):
-                printed_one = True
-                choices[i+1] = subreddit
-                print(f"{i+1}: /r/{subreddit.lower()}")
-            
-            print("For a different subreddit, enter 0.")
-
-
-            choice = input("Subreddit: ")
-            if len(choice) == 0:
-                break
-
-            try:
-                choice = int(choice)
-            except ValueError:
-                print(f"Invalid choice {choice}. Input must be an integer.")
-                print()
-                continue
-
-            if int(choice) == 0:
-                # If they entered zero, continue to get explicit text input.
-                pass
-            else:
-                # Otherwise, take the input and start again.
-                post_data['subreddits'].append(choices[int(choice)])
-                print()
-                continue
-
-        # If we didn't select a saved subreddit, get it as text.
-        print("Enter the subreddit I should post it in. Don't include the \"r/\"!")
-        new_subreddit = input("Subreddit: ").lower()
-        post_data['subreddits'].append(new_subreddit)
-        print("Should I save that?")
-        if input("Save? ").lower() in ["y", "yes"]:
-            config['saved_subreddits'].append(new_subreddit)
-            update_config = True
+    
+    post_data["subreddits"] = input_desired_subreddits()
 
     #%%
     print()
