@@ -12,6 +12,16 @@ def load_config(CONFIG_PATH: str = "config.yaml") -> dict:
 
 config = load_config(CONFIG_PATH)
 
+def input_boolean_loop(prompt):
+    while True:
+        input_string = input(prompt).lower()
+        if input_string in ["y", "yes"]:
+            return True
+        elif input_string in ["n", "no"]:
+            return False
+        else:
+            print("Unrecognised input, try again.")
+
 def get_short_source(source: str) -> Optional[str]:
     """Extract a shortname from a source. 
     
