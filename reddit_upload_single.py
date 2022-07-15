@@ -84,7 +84,16 @@ if __name__ == "__main__":
             print("Error: unrecognised post format. It should start with post_")
             exit()
         else:
+            # Print metadata for selected post, then confirm submission.
+            with open(os.path.join(LIBRARY_DIRECTORY, post, "data.yaml"), 'r') as f:
+                post_data = yaml.load(f, SafeLoader)
+            pprint(post_data)
+            if input("Upload? (y/n): ") not in ["y", "Y", "yes", "Yes"]:
+                continue
+
             reddit_upload_single_post(post, archive=True, verbose=True)
-            break
+            
+            print()
+            continue
 
 
