@@ -1,12 +1,16 @@
 import re
 from typing import Optional, List, Union
 
+CONFIG_PATH = "config.yaml"
+
 def load_config(CONFIG_PATH: str = "config.yaml") -> dict:
     "Load a config file."
     import yaml
     with open(CONFIG_PATH, 'r') as f:
         config = yaml.load(f, yaml.SafeLoader)
     return config
+
+config = load_config(CONFIG_PATH)
 
 def get_short_source(source: str) -> Optional[str]:
     """Extract a shortname from a source. 
@@ -110,11 +114,19 @@ def create_reddit_client(config):
     return client
 
 def upload_to_reddit(url, subreddit, metadata, client):
+
+    def get_flair_id(subreddit):
+        try:
+            return config["default_flairs"][subreddit]
+        except KeyError:
+            return None
+
     submission = client.subreddit(subreddit).submit(
         title=format_title_with_source(metadata),
         url = url,
         resubmit = False,
         nsfw = metadata["nsfw"],
+        flair_id = get_flair_id(subreddit)
     )
 
     return submission
