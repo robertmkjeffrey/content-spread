@@ -69,7 +69,7 @@ if __name__ == "__main__":
 
     while True:
         post = input("Post: ")
-        if post.lower() == "list":
+        if post.lower() in ["list", "ls"]:
             index_file = os.path.join(LIBRARY_DIRECTORY, SUBREDDIT_INDEX_FILE_NAME)
             if os.path.exists(index_file):
                 with open(index_file, "r") as f:
@@ -80,6 +80,8 @@ if __name__ == "__main__":
         elif post.lower() == "random":
             # TODO: select a random post by 
             raise NotImplementedError()
+        elif post.lower() in ["exit", "quit"]:
+            break
         elif post[0:5] != "post_":
             print("Error: unrecognised post format. It should start with post_")
             exit()
